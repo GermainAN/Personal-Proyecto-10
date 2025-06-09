@@ -22,6 +22,19 @@ else
 fi
 
 echo "*********************"
+echo "Ejecutando tflint"
+if [ -d "iac" ]; then
+  if tflint --enable-all iac/; then
+    echo "No se encontraron errores con tflint"
+  else
+    echo "tflint encontro errores"
+    errores=1
+  fi
+else
+  echo "No se encontro el directorio de IaC"
+fi
+
+echo "*********************"
 echo "Resultado Final:"
 if [ $errores -eq 1 ]; then
   echo "Se encontraron errores"
