@@ -13,6 +13,15 @@ else
 fi
 
 echo "*********************"
+echo "Ejecutando shellcheck"
+if shellcheck scripts/* hooks/*; then 
+  echo "No se encontraron errores con shellcheck"
+else
+  echo "shellcheck encontro errores"
+  errores=1
+fi
+
+echo "*********************"
 echo "Resultado Final:"
 if [ $errores -eq 1 ]; then
   echo "Se encontraron errores"
