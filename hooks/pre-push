@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "Ejecutando lint_all.sh antes del push"
+echo "*************************************"
+echo "*************************************"
+
+if ! ./scripts/lint_all.sh; then
+  echo "*************************************"
+  echo "*************************************"
+  echo "hubo un error al ejecutar el ./scripts/lint_all.sh"
+  echo "push cancelado"
+  exit 1
+fi
