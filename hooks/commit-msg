@@ -1,0 +1,16 @@
+#!/bin/bash
+
+commit_message=$(cat "$1")
+
+commit_tipo1='^[A-Z]{3,5}-[0-9]+: .+'
+commit_tipo2='^(feat|fix|docs|style|refactor|perf|test|chore)(\([a-z0-9\-]+\))?: .+'
+
+
+if ! [[ "$commit_message" =~ $commit_tipo1 || "$commit_message" =~ $commit_tipo2 ]]; then
+    echo "El mensaje de commit no cumple con el formato requerido"
+    echo "commits validos"
+    echo "PROY-123: descripcion"
+    echo "tipo[#]: descripcion clara"
+    echo "tipos: feat, fix, docs, style, refactor, perf, test, chore"
+    exit 1
+fi
