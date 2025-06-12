@@ -1,0 +1,451 @@
+From 55c5c837694fef0a3812e0db50fc3a4191e1c263 Mon Sep 17 00:00:00 2001
+From: OliverHz28 <oliver_28z@hotmail.com>
+Date: Sat, 7 Jun 2025 13:01:31 -0500
+Subject: [PATCH 1/8] =?UTF-8?q?inicializar=20configuraci=C3=B3n=20del=20pr?=
+ =?UTF-8?q?oyecto?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ .github/workflows/pr_validation.yaml | 0
+ README.md                            | 9 +++++++++
+ pr_simulation/.gitkeep               | 0
+ scripts/lint_all.sh                  | 1 +
+ src/config_modifier.py               | 0
+ tests/test_config_modifier.py        | 0
+ 6 files changed, 10 insertions(+)
+ create mode 100644 .github/workflows/pr_validation.yaml
+ create mode 100644 README.md
+ create mode 100644 pr_simulation/.gitkeep
+ create mode 100644 scripts/lint_all.sh
+ create mode 100644 src/config_modifier.py
+ create mode 100644 tests/test_config_modifier.py
+
+diff --git a/.github/workflows/pr_validation.yaml b/.github/workflows/pr_validation.yaml
+new file mode 100644
+index 0000000..e69de29
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..c2097b0
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,9 @@
++# Grupo 6 - PC3-proyecto10
++
++## Team
++
++| Miembro del Equipo | Repositorio Principal |
++| :----------------- | :-------------------- | 
++| **Choquecambi Germain** |  |
++| **Serrano Edy** | | 
++| **Hinojosa Frank** |   | 
+\ No newline at end of file
+diff --git a/pr_simulation/.gitkeep b/pr_simulation/.gitkeep
+new file mode 100644
+index 0000000..e69de29
+diff --git a/scripts/lint_all.sh b/scripts/lint_all.sh
+new file mode 100644
+index 0000000..f1f641a
+--- /dev/null
++++ b/scripts/lint_all.sh
+@@ -0,0 +1 @@
++#!/usr/bin/env bash
+diff --git a/src/config_modifier.py b/src/config_modifier.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/tests/test_config_modifier.py b/tests/test_config_modifier.py
+new file mode 100644
+index 0000000..e69de29
+-- 
+2.43.0
+
+
+From 5f66faf8000d45f6cbe3ef54e537b88f0c3af201 Mon Sep 17 00:00:00 2001
+From: Frank Hinojosa <124078849+OliverHz28@users.noreply.github.com>
+Date: Sat, 7 Jun 2025 18:15:29 -0500
+Subject: [PATCH 2/8] feat : Agregar historias de usuario
+
+Propuesta para la
+---
+ .github/ISSUE_TEMPLATE/user-story.md | 38 ++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+ create mode 100644 .github/ISSUE_TEMPLATE/user-story.md
+
+diff --git a/.github/ISSUE_TEMPLATE/user-story.md b/.github/ISSUE_TEMPLATE/user-story.md
+new file mode 100644
+index 0000000..68544a3
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/user-story.md
+@@ -0,0 +1,38 @@
++---
++name: User Story
++about: Describe this issue template's purpose here.
++title: ''
++labels: ''
++assignees: ''
++
++---
++
++---
++name: User Story
++about: Template for defining clear and structured user stories
++title: "[User Story] <Short Title>"
++labels: ["user story"]
++assignees: ""
++---
++
++## User story  
++
++**As a** _(specific role - e.g., "developer," "admin," "customer")_  
++**I need** _(clear functionality or feature needed)_  
++**So that** _(explain the value or business reason for this feature)_
++
++---
++
++##  **Context & Assumptions**  
++- _List any known constraints, assumptions, or dependencies._
++- _Mention related user stories or issues (if applicable)._
++
++---
++
++##  **Acceptance criteria**  
++```gherkin
++Scenario: <Short Description>
++Given <initial context or system state>
++When <user performs an action>
++Then <expected outcome or behavior>
++And <optional additional conditions>
+-- 
+2.43.0
+
+
+From 9bad8909521f5d3768b34677f689bd3c1ccf6192 Mon Sep 17 00:00:00 2001
+From: Frank Hinojosa <124078849+OliverHz28@users.noreply.github.com>
+Date: Sun, 8 Jun 2025 19:03:06 -0500
+Subject: [PATCH 3/8] merge[#4]: feature/config-modifier a feature/develop (#6)
+
+* feat(json): agregar config.json
+
+* feat(py): crear config_modifier.py para leer archivos .json
+
+* feat(structure): crear .gitignore requirements.txt
+
+* feat(refactor): agregar incrementar_version en config_modifier.py
+---
+ .gitignore             |  2 ++
+ config.json            |  5 +++++
+ main.py                |  7 +++++++
+ requirements.txt       |  1 +
+ src/config_modifier.py | 37 +++++++++++++++++++++++++++++++++++++
+ 5 files changed, 52 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 config.json
+ create mode 100644 main.py
+ create mode 100644 requirements.txt
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..3cf8c6d
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++env
++__pycache__
+\ No newline at end of file
+diff --git a/config.json b/config.json
+new file mode 100644
+index 0000000..018ae14
+--- /dev/null
++++ b/config.json
+@@ -0,0 +1,5 @@
++{
++    "version": 2.0,
++    "name": "Proyecto - PC3",
++    "team": "Grupo 6"
++}
+\ No newline at end of file
+diff --git a/main.py b/main.py
+new file mode 100644
+index 0000000..fec53dc
+--- /dev/null
++++ b/main.py
+@@ -0,0 +1,7 @@
++from src.config_modifier import leer_json, incrementar_version
++
++data = leer_json("config.json")
++print(data)
++
++numero_version = incrementar_version("config.json")
++print(f"Nueva versión: {numero_version}")
+diff --git a/requirements.txt b/requirements.txt
+new file mode 100644
+index 0000000..55b033e
+--- /dev/null
++++ b/requirements.txt
+@@ -0,0 +1 @@
++pytest
+\ No newline at end of file
+diff --git a/src/config_modifier.py b/src/config_modifier.py
+index e69de29..b56b5e7 100644
+--- a/src/config_modifier.py
++++ b/src/config_modifier.py
+@@ -0,0 +1,37 @@
++import json
++import os
++
++
++def leer_json(file_path):
++    """
++    Lee el archivo JSON desde el sistema de archivos y
++    devuelve su contenido como un diccionario
++    """
++
++    if not os.path.exists(file_path):
++        raise FileNotFoundError(f"No existe el archivo '{file_path}'")
++
++    with open(file_path, 'r', encoding='utf-8') as f:
++        try:
++            return json.load(f)
++        except json.JSONDecodeError:
++            raise ValueError(f"El archivo '{file_path}' no contiene un JSON válido")
++
++
++def incrementar_version(file_path):
++    """
++    Incrementa el campo "version" del archivo JSON
++    """
++
++    config = leer_json(file_path)
++
++    if "version" not in config:
++        raise KeyError("No existe el campo 'version' en el archivo JSON")
++
++    if not isinstance(config['version'], (int, float)):
++        raise TypeError("El campo 'version' no es un número")
++
++    config["version"] += 1
++    with open(file_path, 'w', encoding='utf-8') as f:
++        json.dump(config, f, indent=4)
++    return config["version"]
+-- 
+2.43.0
+
+
+From a778b8597c45779ad0c31b9fca5d9d1cd728ca67 Mon Sep 17 00:00:00 2001
+From: GermainAN <germainchoquechambi5@gmail.com>
+Date: Sun, 8 Jun 2025 21:32:49 -0500
+Subject: [PATCH 4/8] feat[#5]: agregar script para validar codigo Python con
+ flake8
+
+---
+ .gitignore          |  2 +-
+ requirements.txt    |  3 ++-
+ scripts/lint_all.sh | 22 ++++++++++++++++++++++
+ 3 files changed, 25 insertions(+), 2 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index 3cf8c6d..b0b4ebb 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,2 +1,2 @@
+-env
++pc3
+ __pycache__
+\ No newline at end of file
+diff --git a/requirements.txt b/requirements.txt
+index 55b033e..036d8c5 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1 +1,2 @@
+-pytest
+\ No newline at end of file
++pytest
++flake8
+\ No newline at end of file
+diff --git a/scripts/lint_all.sh b/scripts/lint_all.sh
+index f1f641a..9a729aa 100644
+--- a/scripts/lint_all.sh
++++ b/scripts/lint_all.sh
+@@ -1 +1,23 @@
+ #!/usr/bin/env bash
++
++cd "$(dirname "$0")/.." || exit
++
++errores=0 
++
++echo "Ejecutando flake8"
++if flake8 src/ tests/ ./*.py --max-line-length=88 --select=E,W,F; then
++  echo "No se encontraron errores con flake8"
++else
++  echo "flake8 encontro errores"
++  errores=1
++fi
++
++echo "*********************"
++echo "Resultado Final:"
++if [ $errores -eq 1 ]; then
++  echo "Se encontraron errores"
++  exit 1
++else
++  echo "Todos los lint pasaron correctamente"
++  exit 0
++fi
+\ No newline at end of file
+-- 
+2.43.0
+
+
+From d1dff4ba36b4c59fef732c8245c5e22f457e92a1 Mon Sep 17 00:00:00 2001
+From: GermainAN <germainchoquechambi5@gmail.com>
+Date: Sun, 8 Jun 2025 21:40:03 -0500
+Subject: [PATCH 5/8] =?UTF-8?q?feat[#5]:=20a=C3=B1adir=20validacion=20de?=
+ =?UTF-8?q?=20scripts=20bash=20con=20shellcheck?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ scripts/lint_all.sh | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+ mode change 100644 => 100755 scripts/lint_all.sh
+
+diff --git a/scripts/lint_all.sh b/scripts/lint_all.sh
+old mode 100644
+new mode 100755
+index 9a729aa..84ea569
+--- a/scripts/lint_all.sh
++++ b/scripts/lint_all.sh
+@@ -12,6 +12,15 @@ else
+   errores=1
+ fi
+ 
++echo "*********************"
++echo "Ejecutando shellcheck"
++if shellcheck scripts/* hooks/*; then 
++  echo "No se encontraron errores con shellcheck"
++else
++  echo "shellcheck encontro errores"
++  errores=1
++fi
++
+ echo "*********************"
+ echo "Resultado Final:"
+ if [ $errores -eq 1 ]; then
+-- 
+2.43.0
+
+
+From ca1a30b1f81bc8e60cd481b7c47ebe46861b5b8e Mon Sep 17 00:00:00 2001
+From: GermainAN <germainchoquechambi5@gmail.com>
+Date: Sun, 8 Jun 2025 21:44:04 -0500
+Subject: [PATCH 6/8] =?UTF-8?q?feat[#5]::=20a=C3=B1adir=20validacion=20con?=
+ =?UTF-8?q?=20tflint=20para=20IaC?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ scripts/lint_all.sh | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/scripts/lint_all.sh b/scripts/lint_all.sh
+index 84ea569..2b860f8 100755
+--- a/scripts/lint_all.sh
++++ b/scripts/lint_all.sh
+@@ -21,6 +21,19 @@ else
+   errores=1
+ fi
+ 
++echo "*********************"
++echo "Ejecutando tflint"
++if [ -d "iac" ]; then
++  if tflint --enable-all iac/; then
++    echo "No se encontraron errores con tflint"
++  else
++    echo "tflint encontro errores"
++    errores=1
++  fi
++else
++  echo "No se encontro el directorio de IaC"
++fi
++
+ echo "*********************"
+ echo "Resultado Final:"
+ if [ $errores -eq 1 ]; then
+-- 
+2.43.0
+
+
+From a87853171576ffd6b707350516f3afc509df4255 Mon Sep 17 00:00:00 2001
+From: GermainAN <germainchoquechambi5@gmail.com>
+Date: Sun, 8 Jun 2025 21:54:46 -0500
+Subject: [PATCH 7/8] feat[#8]: implementar hook para validar el formato del
+ mensaje del commit
+
+---
+ hooks/commit-msg | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+ create mode 100644 hooks/commit-msg
+
+diff --git a/hooks/commit-msg b/hooks/commit-msg
+new file mode 100644
+index 0000000..9b53516
+--- /dev/null
++++ b/hooks/commit-msg
+@@ -0,0 +1,16 @@
++#!/bin/bash
++
++commit_message=$(cat "$1")
++
++commit_tipo1='^[A-Z]{3,5}-[0-9]+: .+'
++commit_tipo2='^(feat|fix|docs|style|refactor|perf|test|chore)(\([a-z0-9\-]+\))?: .+'
++
++
++if ! [[ "$commit_message" =~ $commit_tipo1 || "$commit_message" =~ $commit_tipo2 ]]; then
++    echo "El mensaje de commit no cumple con el formato requerido"
++    echo "commits validos"
++    echo "PROY-123: descripcion"
++    echo "tipo[#]: descripcion clara"
++    echo "tipos: feat, fix, docs, style, refactor, perf, test, chore"
++    exit 1
++fi
+\ No newline at end of file
+-- 
+2.43.0
+
+
+From cd1df84321c8938de9a002ce8e290911c1e7dfe4 Mon Sep 17 00:00:00 2001
+From: GermainAN <germainchoquechambi5@gmail.com>
+Date: Sun, 8 Jun 2025 22:09:46 -0500
+Subject: [PATCH 8/8] feat[#8]: implementar hook pre-push para prevenir push
+ con errores
+
+---
+ hooks/pre-push | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+ create mode 100644 hooks/pre-push
+
+diff --git a/hooks/pre-push b/hooks/pre-push
+new file mode 100644
+index 0000000..90ffd24
+--- /dev/null
++++ b/hooks/pre-push
+@@ -0,0 +1,13 @@
++#!/bin/bash
++
++echo "Ejecutando lint_all.sh antes del push"
++echo "*************************************"
++echo "*************************************"
++
++if ! ./scripts/lint_all.sh; then
++  echo "*************************************"
++  echo "*************************************"
++  echo "hubo un error al ejecutar el ./scripts/lint_all.sh"
++  echo "push cancelado"
++  exit 1
++fi
+\ No newline at end of file
+-- 
+2.43.0
+
