@@ -1,0 +1,2101 @@
+From 9bad8909521f5d3768b34677f689bd3c1ccf6192 Mon Sep 17 00:00:00 2001
+From: Frank Hinojosa <124078849+OliverHz28@users.noreply.github.com>
+Date: Sun, 8 Jun 2025 19:03:06 -0500
+Subject: [PATCH 01/27] merge[#4]: feature/config-modifier a feature/develop
+ (#6)
+
+* feat(json): agregar config.json
+
+* feat(py): crear config_modifier.py para leer archivos .json
+
+* feat(structure): crear .gitignore requirements.txt
+
+* feat(refactor): agregar incrementar_version en config_modifier.py
+---
+ .gitignore             |  2 ++
+ config.json            |  5 +++++
+ main.py                |  7 +++++++
+ requirements.txt       |  1 +
+ src/config_modifier.py | 37 +++++++++++++++++++++++++++++++++++++
+ 5 files changed, 52 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 config.json
+ create mode 100644 main.py
+ create mode 100644 requirements.txt
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..3cf8c6d
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++env
++__pycache__
+\ No newline at end of file
+diff --git a/config.json b/config.json
+new file mode 100644
+index 0000000..018ae14
+--- /dev/null
++++ b/config.json
+@@ -0,0 +1,5 @@
++{
++    "version": 2.0,
++    "name": "Proyecto - PC3",
++    "team": "Grupo 6"
++}
+\ No newline at end of file
+diff --git a/main.py b/main.py
+new file mode 100644
+index 0000000..fec53dc
+--- /dev/null
++++ b/main.py
+@@ -0,0 +1,7 @@
++from src.config_modifier import leer_json, incrementar_version
++
++data = leer_json("config.json")
++print(data)
++
++numero_version = incrementar_version("config.json")
++print(f"Nueva versión: {numero_version}")
+diff --git a/requirements.txt b/requirements.txt
+new file mode 100644
+index 0000000..55b033e
+--- /dev/null
++++ b/requirements.txt
+@@ -0,0 +1 @@
++pytest
+\ No newline at end of file
+diff --git a/src/config_modifier.py b/src/config_modifier.py
+index e69de29..b56b5e7 100644
+--- a/src/config_modifier.py
++++ b/src/config_modifier.py
+@@ -0,0 +1,37 @@
++import json
++import os
++
++
++def leer_json(file_path):
++    """
++    Lee el archivo JSON desde el sistema de archivos y
++    devuelve su contenido como un diccionario
++    """
++
++    if not os.path.exists(file_path):
++        raise FileNotFoundError(f"No existe el archivo '{file_path}'")
++
++    with open(file_path, 'r', encoding='utf-8') as f:
++        try:
++            return json.load(f)
++        except json.JSONDecodeError:
++            raise ValueError(f"El archivo '{file_path}' no contiene un JSON válido")
++
++
++def incrementar_version(file_path):
++    """
++    Incrementa el campo "version" del archivo JSON
++    """
++
++    config = leer_json(file_path)
++
++    if "version" not in config:
++        raise KeyError("No existe el campo 'version' en el archivo JSON")
++
++    if not isinstance(config['version'], (int, float)):
++        raise TypeError("El campo 'version' no es un número")
++
++    config["version"] += 1
++    with open(file_path, 'w', encoding='utf-8') as f:
++        json.dump(config, f, indent=4)
++    return config["version"]
+-- 
+2.43.0
+
+
+From 8472d9c5b6ef78bd92a1d1e5128f27a9fdaf5059 Mon Sep 17 00:00:00 2001
+From: Edy <166039525+EdySerrano@users.noreply.github.com>
+Date: Sun, 8 Jun 2025 22:06:40 -0500
+Subject: [PATCH 02/27] merge[#2]: feature/test a feature/develop  (#7)
+
+* test[#2]: agregando test json_de_prueba en test_config_modifier.py
+
+* test[#2]: agregando test test__leer_json_valido en test_config_modifier.py
+
+* test[#2]: agregando test test_incrementar_version en test_config_modifier.py
+
+* test[#2]: agregando test test_leer_json_invalido en test_config_modifier.py
+
+* test[#2]: agregando test test_incrementar_version_tipo_incorrecto en test_config_modifier.py
+
+---------
+
+Co-authored-by: EdySerrano <edy.serrano.a@uni.pe>
+---
+ .gitignore                    |  2 +-
+ tests/test_config_modifier.py | 44 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+), 1 deletion(-)
+
+diff --git a/.gitignore b/.gitignore
+index 3cf8c6d..b0b4ebb 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,2 +1,2 @@
+-env
++pc3
+ __pycache__
+\ No newline at end of file
+diff --git a/tests/test_config_modifier.py b/tests/test_config_modifier.py
+index e69de29..756a899 100644
+--- a/tests/test_config_modifier.py
++++ b/tests/test_config_modifier.py
+@@ -0,0 +1,44 @@
++# tests/test_config_modifier.py
++
++import pytest
++import json
++import os
++from src.config_modifier import leer_json, incrementar_version
++
++@pytest.fixture
++# Preparamos un archivo temporal para pruebas
++def json_de_prueba(tmp_path):
++    file_path = tmp_path / "config.json"
++    data = {"version": 1.0, "name": "Test App"}
++    with open(file_path, 'w') as f:
++        json.dump(data, f)
++    return file_path
++
++# Preparamos un archivo JSON valido para probar la lectura correcta
++def test_leer_json_valido(json_de_prueba):
++    contenido = leer_json(json_de_prueba)
++    assert contenido["version"] == 1.0
++    assert contenido["name"] == "Test App"
++
++# Preparamos un archivo JSON con el campo 'version' valido para probar el incremento de version
++def test_incrementar_version(json_de_prueba):
++    nueva_version = incrementar_version(json_de_prueba)
++    assert nueva_version == 2.0
++    with open(json_de_prueba) as f:
++        datos = json.load(f)
++    assert datos["version"] == 2.0
++
++#Preparamos un archivo  con contenido invalido (no JSON)
++def test_leer_json_invalido(tmp_path):
++    file_path = tmp_path / "invalido.json"
++    file_path.write_text("esto no es json")
++    with pytest.raises(ValueError):
++        leer_json(file_path)
++
++# Preparamos un archivo JSON con campo 'version' de tipo incorrecto
++def test_incrementar_version_tipo_incorrecto(tmp_path):
++    file_path = tmp_path / "version_invalida.json"
++    with open(file_path, 'w') as f:
++        json.dump({"version": "uno"}, f)
++    with pytest.raises(TypeError):
++        incrementar_version(file_path)
+\ No newline at end of file
+-- 
+2.43.0
+
+
+From c19091e1fffb0d272a608fdd8b49751312f92d81 Mon Sep 17 00:00:00 2001
+From: Edy <166039525+EdySerrano@users.noreply.github.com>
+Date: Mon, 9 Jun 2025 00:07:33 -0500
+Subject: [PATCH 03/27] merge[#3]: feature/workflow a feature/develop (#9)
+
+---
+ .github/workflows/pr_validation.yaml | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/.github/workflows/pr_validation.yaml b/.github/workflows/pr_validation.yaml
+index e69de29..68f6206 100644
+--- a/.github/workflows/pr_validation.yaml
++++ b/.github/workflows/pr_validation.yaml
+@@ -0,0 +1,19 @@
++name: PR Validation  
++
++on:
++  push:              
++  pull_request:     
++
++jobs:
++  placeholder:
++    runs-on: ubuntu-latest   
++
++    steps:
++      - name: Paso de ejemplo (Placeholder)  # el job placeholder es uno vacio
++        run: echo "Workflow placeholder"
++
++      # Aqui se pueden agregar pasos siguientes, como:
++      # - Validacion de formato de codigo (linter)
++      # - Ejecucion de pruebas unitarias
++      # - Validacion de la construccion del proyecto (build)
++  
+-- 
+2.43.0
+
+
+From 3032b75efa1968e148f5e5d9099a81425e89ae84 Mon Sep 17 00:00:00 2001
+From: GermainAN <germainchoquechambi5@gmail.com>
+Date: Mon, 9 Jun 2025 00:16:51 -0500
+Subject: [PATCH 04/27]  merge[#8]: feature/lint-hook a feature/develop (#10)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+* feat[#5]: agregar script para validar codigo Python con flake8
+
+* feat[#5]: añadir validacion de scripts bash con shellcheck
+
+* feat[#5]:: añadir validacion con tflint para IaC
+
+* feat[#8]: implementar hook para validar el formato del mensaje del commit
+
+* feat[#8]: implementar hook pre-push para prevenir push con errores
+---
+ hooks/commit-msg    | 16 ++++++++++++++++
+ hooks/pre-push      | 13 +++++++++++++
+ requirements.txt    |  3 ++-
+ scripts/lint_all.sh | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 75 insertions(+), 1 deletion(-)
+ create mode 100644 hooks/commit-msg
+ create mode 100644 hooks/pre-push
+ mode change 100644 => 100755 scripts/lint_all.sh
+
+diff --git a/hooks/commit-msg b/hooks/commit-msg
+new file mode 100644
+index 0000000..9b53516
+--- /dev/null
++++ b/hooks/commit-msg
+@@ -0,0 +1,16 @@
++#!/bin/bash
++
++commit_message=$(cat "$1")
++
++commit_tipo1='^[A-Z]{3,5}-[0-9]+: .+'
++commit_tipo2='^(feat|fix|docs|style|refactor|perf|test|chore)(\([a-z0-9\-]+\))?: .+'
++
++
++if ! [[ "$commit_message" =~ $commit_tipo1 || "$commit_message" =~ $commit_tipo2 ]]; then
++    echo "El mensaje de commit no cumple con el formato requerido"
++    echo "commits validos"
++    echo "PROY-123: descripcion"
++    echo "tipo[#]: descripcion clara"
++    echo "tipos: feat, fix, docs, style, refactor, perf, test, chore"
++    exit 1
++fi
+\ No newline at end of file
+diff --git a/hooks/pre-push b/hooks/pre-push
+new file mode 100644
+index 0000000..90ffd24
+--- /dev/null
++++ b/hooks/pre-push
+@@ -0,0 +1,13 @@
++#!/bin/bash
++
++echo "Ejecutando lint_all.sh antes del push"
++echo "*************************************"
++echo "*************************************"
++
++if ! ./scripts/lint_all.sh; then
++  echo "*************************************"
++  echo "*************************************"
++  echo "hubo un error al ejecutar el ./scripts/lint_all.sh"
++  echo "push cancelado"
++  exit 1
++fi
+\ No newline at end of file
+diff --git a/requirements.txt b/requirements.txt
+index 55b033e..036d8c5 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1 +1,2 @@
+-pytest
+\ No newline at end of file
++pytest
++flake8
+\ No newline at end of file
+diff --git a/scripts/lint_all.sh b/scripts/lint_all.sh
+old mode 100644
+new mode 100755
+index f1f641a..2b860f8
+--- a/scripts/lint_all.sh
++++ b/scripts/lint_all.sh
+@@ -1 +1,45 @@
+ #!/usr/bin/env bash
++
++cd "$(dirname "$0")/.." || exit
++
++errores=0 
++
++echo "Ejecutando flake8"
++if flake8 src/ tests/ ./*.py --max-line-length=88 --select=E,W,F; then
++  echo "No se encontraron errores con flake8"
++else
++  echo "flake8 encontro errores"
++  errores=1
++fi
++
++echo "*********************"
++echo "Ejecutando shellcheck"
++if shellcheck scripts/* hooks/*; then 
++  echo "No se encontraron errores con shellcheck"
++else
++  echo "shellcheck encontro errores"
++  errores=1
++fi
++
++echo "*********************"
++echo "Ejecutando tflint"
++if [ -d "iac" ]; then
++  if tflint --enable-all iac/; then
++    echo "No se encontraron errores con tflint"
++  else
++    echo "tflint encontro errores"
++    errores=1
++  fi
++else
++  echo "No se encontro el directorio de IaC"
++fi
++
++echo "*********************"
++echo "Resultado Final:"
++if [ $errores -eq 1 ]; then
++  echo "Se encontraron errores"
++  exit 1
++else
++  echo "Todos los lint pasaron correctamente"
++  exit 0
++fi
+\ No newline at end of file
+-- 
+2.43.0
+
+
+From 5864808521617bdde65155a8dcf318cdd8b6d439 Mon Sep 17 00:00:00 2001
+From: Edy <166039525+EdySerrano@users.noreply.github.com>
+Date: Wed, 11 Jun 2025 10:01:15 -0500
+Subject: [PATCH 05/27] merge[#2]: feature/tests  (#11)
+
+* test[#2]: agregando test json_de_prueba en test_config_modifier.py
+
+* test[#2]: agregando test test__leer_json_valido en test_config_modifier.py
+
+* test[#2]: agregando test test_incrementar_version en test_config_modifier.py
+
+* test[#2]: agregando test test_leer_json_invalido en test_config_modifier.py
+
+* test[#2]: agregando test test_incrementar_version_tipo_incorrecto en test_config_modifier.py
+
+* Actualizacion de test_config_modifier.py
+
+Ocurrio un problema con el pytest y windows pero ya se soluciono
+
+---------
+
+Co-authored-by: edysaul20000 <edysaulserrano@gmail.com>
+---
+ tests/test_config_modifier.py | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/tests/test_config_modifier.py b/tests/test_config_modifier.py
+index 756a899..7af5bb2 100644
+--- a/tests/test_config_modifier.py
++++ b/tests/test_config_modifier.py
+@@ -2,8 +2,11 @@
+ 
+ import pytest
+ import json
++import sys
+ import os
+-from src.config_modifier import leer_json, incrementar_version
++sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
++
++from config_modifier import leer_json, incrementar_version
+ 
+ @pytest.fixture
+ # Preparamos un archivo temporal para pruebas
+@@ -41,4 +44,4 @@ def test_incrementar_version_tipo_incorrecto(tmp_path):
+     with open(file_path, 'w') as f:
+         json.dump({"version": "uno"}, f)
+     with pytest.raises(TypeError):
+-        incrementar_version(file_path)
+\ No newline at end of file
++        incrementar_version(file_path)
+-- 
+2.43.0
+
+
+From b4ea96328230edbf488f29ee6acdcd9489ae763c Mon Sep 17 00:00:00 2001
+From: OliverHz28 <oliver_28z@hotmail.com>
+Date: Sun, 15 Jun 2025 23:50:18 -0500
+Subject: [PATCH 06/27] feat[#22]: agregar pytest.ini para la configuracion de
+ tests
+
+---
+ hooks/commit-msg | 2 +-
+ pytest.ini       | 6 ++++++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+ create mode 100644 pytest.ini
+
+diff --git a/hooks/commit-msg b/hooks/commit-msg
+index 9b53516..4e511f7 100644
+--- a/hooks/commit-msg
++++ b/hooks/commit-msg
+@@ -3,7 +3,7 @@
+ commit_message=$(cat "$1")
+ 
+ commit_tipo1='^[A-Z]{3,5}-[0-9]+: .+'
+-commit_tipo2='^(feat|fix|docs|style|refactor|perf|test|chore)(\([a-z0-9\-]+\))?: .+'
++commit_tipo2='^(feat|fix|docs|style|refactor|perf|test|chore)\[#?[0-9]+\]: .+'
+ 
+ 
+ if ! [[ "$commit_message" =~ $commit_tipo1 || "$commit_message" =~ $commit_tipo2 ]]; then
+diff --git a/pytest.ini b/pytest.ini
+new file mode 100644
+index 0000000..79510be
+--- /dev/null
++++ b/pytest.ini
+@@ -0,0 +1,6 @@
++[pytest]
++minversion = 8.0
++# addopts = -ra -q
++testpaths =
++    tests
++pythonpath = .
+\ No newline at end of file
+-- 
+2.43.0
+
+
+From 5481f6a91ff917f13d5060d6e15cbadfe6d29688 Mon Sep 17 00:00:00 2001
+From: OliverHz28 <oliver_28z@hotmail.com>
+Date: Sun, 15 Jun 2025 23:54:29 -0500
+Subject: [PATCH 07/27] refactor[#22]: corregir lint_all.sh
+
+---
+ scripts/lint_all.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/lint_all.sh b/scripts/lint_all.sh
+index 2b860f8..845f6ee 100755
+--- a/scripts/lint_all.sh
++++ b/scripts/lint_all.sh
+@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.." || exit
+ errores=0 
+ 
+ echo "Ejecutando flake8"
+-if flake8 src/ tests/ ./*.py --max-line-length=88 --select=E,W,F; then
++if flake8 src/ tests/ --max-line-length=88 --select=E,W,F; then
+   echo "No se encontraron errores con flake8"
+ else
+   echo "flake8 encontro errores"
+-- 
+2.43.0
+
+
+From 61e7ab4028d41890ad875820bb7c7774ae92b04f Mon Sep 17 00:00:00 2001
+From: OliverHz28 <oliver_28z@hotmail.com>
+Date: Sun, 15 Jun 2025 23:59:42 -0500
+Subject: [PATCH 08/27] refactor[#22]: agregar __main__ en config_modifier.py y
+ optimizar los tests
+
+---
+ main.py                       |  7 -------
+ src/config_modifier.py        | 12 ++++++++++++
+ tests/test_config_modifier.py | 17 ++++++++++-------
+ 3 files changed, 22 insertions(+), 14 deletions(-)
+ delete mode 100644 main.py
+
+diff --git a/main.py b/main.py
+deleted file mode 100644
+index fec53dc..0000000
+--- a/main.py
++++ /dev/null
+@@ -1,7 +0,0 @@
+-from src.config_modifier import leer_json, incrementar_version
+-
+-data = leer_json("config.json")
+-print(data)
+-
+-numero_version = incrementar_version("config.json")
+-print(f"Nueva versión: {numero_version}")
+diff --git a/src/config_modifier.py b/src/config_modifier.py
+index b56b5e7..0d7dbf0 100644
+--- a/src/config_modifier.py
++++ b/src/config_modifier.py
+@@ -35,3 +35,15 @@ def incrementar_version(file_path):
+     with open(file_path, 'w', encoding='utf-8') as f:
+         json.dump(config, f, indent=4)
+     return config["version"]
++
++
++if __name__ == "__main__":
++
++    file_path = "config.json"
++    try:
++        data = leer_json(file_path)
++        print(f"Contenido del archivo '{file_path}': {data}")
++        nueva_version = incrementar_version(file_path)
++        print(f"Versión actualizada correctamente a: {nueva_version}")
++    except Exception as e:
++        print(f"Error: {e}")
+diff --git a/tests/test_config_modifier.py b/tests/test_config_modifier.py
+index 7af5bb2..c20fafb 100644
+--- a/tests/test_config_modifier.py
++++ b/tests/test_config_modifier.py
+@@ -2,14 +2,12 @@
+ 
+ import pytest
+ import json
+-import sys
+-import os
+-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
++from src.config_modifier import leer_json, incrementar_version
+ 
+-from config_modifier import leer_json, incrementar_version
+ 
+ @pytest.fixture
+-# Preparamos un archivo temporal para pruebas
++# Preparamos un archivo
++# temporal para pruebas
+ def json_de_prueba(tmp_path):
+     file_path = tmp_path / "config.json"
+     data = {"version": 1.0, "name": "Test App"}
+@@ -17,13 +15,16 @@ def json_de_prueba(tmp_path):
+         json.dump(data, f)
+     return file_path
+ 
++
+ # Preparamos un archivo JSON valido para probar la lectura correcta
+ def test_leer_json_valido(json_de_prueba):
+     contenido = leer_json(json_de_prueba)
+     assert contenido["version"] == 1.0
+     assert contenido["name"] == "Test App"
+ 
+-# Preparamos un archivo JSON con el campo 'version' valido para probar el incremento de version
++
++# Preparamos un archivo JSON con el campo 'version'
++# valido para probar el incremento de version
+ def test_incrementar_version(json_de_prueba):
+     nueva_version = incrementar_version(json_de_prueba)
+     assert nueva_version == 2.0
+@@ -31,13 +32,15 @@ def test_incrementar_version(json_de_prueba):
+         datos = json.load(f)
+     assert datos["version"] == 2.0
+ 
+-#Preparamos un archivo  con contenido invalido (no JSON)
++
++# Preparamos un archivo  con contenido invalido (no JSON)
+ def test_leer_json_invalido(tmp_path):
+     file_path = tmp_path / "invalido.json"
+     file_path.write_text("esto no es json")
+     with pytest.raises(ValueError):
+         leer_json(file_path)
+ 
++
+ # Preparamos un archivo JSON con campo 'version' de tipo incorrecto
+ def test_incrementar_version_tipo_incorrecto(tmp_path):
+     file_path = tmp_path / "version_invalida.json"
+-- 
+2.43.0
+
+
+From 2774da6ef9715191bf3562595841775b9452a99d Mon Sep 17 00:00:00 2001
+From: OliverHz28 <oliver_28z@hotmail.com>
+Date: Mon, 16 Jun 2025 00:01:00 -0500
+Subject: [PATCH 09/27] docs[#22]: actualizar README con guias de uso completas
+
+---
+ README.md | 213 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 209 insertions(+), 4 deletions(-)
+
+diff --git a/README.md b/README.md
+index c2097b0..465af9b 100644
+--- a/README.md
++++ b/README.md
+@@ -2,8 +2,213 @@
+ 
+ ## Team
+ 
+-| Miembro del Equipo | Repositorio Principal |
++| Miembro del Equipo | Codigo |
+ | :----------------- | :-------------------- | 
+-| **Choquecambi Germain** |  |
+-| **Serrano Edy** | | 
+-| **Hinojosa Frank** |   | 
+\ No newline at end of file
++| **Choquecambi Germain** | `20211360A` |
++| **Serrano Edy** | `20211229B` | 
++| **Hinojosa Frank** | `20210345I`  | 
++
++## Descripcion
++
++**Proyecto 10 - Grupo 6**, enfocado en simular un flujo Pull Request completo y la revisión de código automatizada usando:
++
++- Git hooks
++- Linters y análisis estático
++- Scripts Python
++- Simulación de merge
++- Integración con GitHub Actions (act)
++
++El avance se ha divido en 3 Sprints.
++
++## Sprint 1
++
++Realizado del 7 al 9 de junio de 2025, se compone de los siguiente:
++
++### 1. Ramas
++
++- `feature/tests`, desarrollado por **Edy Serrano** 
++- `feature/hooks-testing`, desarrollado por **Germain Choquechambi** 
++- `feature/lint-hooks`, desarrollado por **Germain Choquechambi** 
++- `feature/workflows`, desarrollado por **Edy Serrano** 
++- `feature/config-modifier`, desarrollado por **Frank Hinojosa** 
++
++### 2. Isues
++
++- [#2](#2-pruebas-automatizadas) Pruebas automatizadas
++- [#3](#3-crear-workflow) Crear workflow 
++- [#4](#4-crear-script-config_modifierpy) Crear script config_modifier.py
++- [#5](#5-verificacion-calidad-de-codigo-python) Verificacion calidad de Codigo Python
++- [#8](#8-validacion-y-control-de-calidad-con-hooks-commit-msg-y-pre-push) Validacion y control de calidad con hooks commit-msg y pre-push
++
++### 3. Pull Request
++
++- [#6](https://github.com/OliverHz28/PC3Proyecto10/pull/6) : merge[#4](#4-crear-script-config_modifierpy): feature/config-modifier a feature/develop 
++- [#7](https://github.com/OliverHz28/PC3Proyecto10/pull/7) : merge[#2](#2-pruebas-automatizadas): feature/test a feature/develop
++- [#9](https://github.com/OliverHz28/PC3Proyecto10/pull/9) : merge[#3](#3-crear-workflow) : feature/workflow a feature/develop
++- [#10](https://github.com/OliverHz28/PC3Proyecto10/pull/10) : [#8](#8-validacion-y-control-de-calidad-con-hooks-commit-msg-y-pre-push) y [#5](#5-verificacion-calidad-de-codigo-python) : Feature/lint hooks
++
++
++## Objetivos
++
++- Crear la estructura inicial:
++
++  * Carpeta `scripts/` con:
++    * `lint_all.sh` que ejecute:
++
++      * `flake8 src/ --max-line-length=88 --select=E,W,F`
++      * `shellcheck scripts/*.sh`
++      * `tflint --enable-all iac/` (si existe carpeta `iac/`, sino mostrar mensaje de "No IaC").
++    * Hook `commit-msg` en `.git/hooks/` que valide patrón `^[A-Z]{3,5}-\d+: .+`.
++    * Hook `pre-push` en `.git/hooks/` que llame a `lint_all.sh` y bloquee si hay errores.
++  * Carpeta `src/` con un script Python `config_modifier.py` que:
++
++    * Lea un JSON `config.json` y modifique un campo específico (por ejemplo, incremente "version").
++  * Carpeta `tests/` con al menos 2 pruebas pytest para `config_modifier.py`.
++  * Carpeta `.github/workflows/` con archivo `pr_validation.yaml` esqueleto que contenga jobs vacíos.
++  * Carpeta `pr_simulation/` vacía.
++
++* Ejecutar `lint_all.sh` localmente y corregir errores encontrados.
++
++## Demostracion en video
++
++[Sprint 1 (Dia 3: 9/06/2025) Grupo 6 Proyecto 10 ](https://www.youtube.com/watch?v=ZwcuikAZ56w&ab_channel=SerranoArosteguiEdySaul)
++
++## Distribución
++
++- **Edy Serrano**: Issues [#2](#2-pruebas-automatizadas), [#3](#3-crear-workflow)
++- **Frank Hinojosa**: Issues [#4](#4-crear-script-config_modifierpy)
++- **Germain Choquecambi**: [#5](#5-verificacion-calidad-de-codigo-python), [#8](#8-validacion-y-control-de-calidad-con-hooks-commit-msg-y-pre-push)
++
++## Issues del Sprint 1
++
++### [#2](https://github.com/OliverHz28/PC3Proyecto10/issues/2) Pruebas automatizadas
++- **User story**  
++    **As a** _desarrollador_  
++    **I need** _pruebas automatizadas para asegurar el funcionamiento correcto del sistema_  
++    **So that** _puedo garantizar que las funcionalidades principales operan correctamente y detectar errores de manera temprana_
++- **Responsable**: Edy Serrano
++- **Rama**: `feature/tests`
++- **Objetivo**: Garantizar que las funcionalidades principales operan correctamente y detectar errores de manera temprana
++
++### [#3](https://github.com/OliverHz28/PC3Proyecto10/issues/3) Crear workflow 
++- **User story**  
++    **As a** _desarrollador_  
++    **I need** _un workflow skeleton pr_validation.yaml para preparar la automatización de validaciones_  
++    **So that** _el proyecto este listo para implementar validaciones automaticas en los flujos de desarrollo (push y pull request)_
++- **Responsable**: Edy Serrano
++- **Rama**: `feature/workflows`
++- **Objetivo**: Preparar el skeleton pr_validation.yaml que contenga jobs vacíos.
++
++### [#4](https://github.com/OliverHz28/PC3Proyecto10/issues/4) Crear script config_modifier.py
++- **User story**  
++    **As a** _desarrollador_  
++    **I need** _un script `config_modifier.py` que modifique archivos JSON_  
++    **So that** _pueda automatizar cambios de configuración en los proyectos de forma rapida y segura_ 
++- **Responsable**: Frank Hinojosa
++- **Rama**: `feature/config-modifier`
++- **Objetivo**: Crear `config_modifier.py` con funciones que lea un JSON config.json y modifique un campo específico como incrementar la `version`
++
++### [#5](https://github.com/OliverHz28/PC3Proyecto10/issues/5) Verificacion calidad de Codigo Python
++- **User story**  
++    **As a** _desarrolador_  
++    **I need** _analizar automaticamente mi codigo Python en busca de errores y prblemas de estilo_  
++    **So that** _pueda asegurarme de que la base de codigo se mantenga limpia, legible y libre de erroes comunes_ 
++- **Responsable**: Germain Choquechambi
++- **Rama**: `feature/lint-hooks`
++- **Objetivo**: Para verificar la calidad del codigo usando `linters`
++
++### [#8](https://github.com/OliverHz28/PC3Proyecto10/issues/8) Validacion y control de calidad con hooks commit-msg y pre-push
++- **User story**  
++    **As a** _desarrollador_  
++    **I need** _que el hook commit-msg valide el formato del mensaje de commit y que el hook pre-push ejecute un script de linting antes de permitir un push_  
++    **So that** _se mantenga un mensaje de commits claro, y se garantice la calidad del codigo antes de subir cambios al repositorio remoto_
++- **Responsable**: Germain Choquechambi
++- **Rama**: `feature/hooks-testing`
++- **Objetivo**: Verificar el formato del commit y garantizar la calidad del codigo antes de subir cambios al repositorio remoto
++
++
++
++## Flujo de Trabajo
++Se utilizo la estrategia **Git Flow** para organizar el desarrollo:
++
++- **Ramas principales**:
++  - `main`: Contiene la version estable y lista para produccion.
++  - `develop`: Integra las funcionalidades completadas antes de pasar a `main`.
++
++- **Ramas de soporte**:
++  - `feature/*`: Cada nueva funcionalidad o issue se desarrolla en una rama `feature/nombre-issue` creada desde `develop`.
++  - `hotfix/*`: Para corregir errores críticos detectados en `main`.
++  - `release/*`: Preparacion de nuevas versiones antes de fusionar a `main`.
++
++## Ejecucion del Proyecto
++
++Para trabajar con el proyecto, realiza los pasos a continuacion.
++
++1. **Clonar el repositorio**
++    ```bash
++    git clone https://github.com/OliverHz28/PC3Proyecto10.git
++    cd PC3Proyecto10
++    ```
++
++2. **Crear y activar el entorno virtual**
++    ```bash
++    python3 -m venv pc3
++    source pc3/bin/activate
++    ```
++
++3. **Instalar dependencias**
++    ```bash
++    pip install -r requirements.txt
++    ```
++4. **Instalar herramientas de analisis**
++    
++    Instalar `shellcheck` para analizar scrips bash
++    ```bash
++    sudo apt update && sudo apt install shellcheck
++    ```
++
++    Instalar `tflint` para analizar el codigo terraform de la plataforma oficial
++    ```bash
++    curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
++    ```
++5. Copiar los `hooks` personalizados a la carpeta `.git/hooks`
++
++    ```bash
++    cp hooks/commit-msg .git/hooks/commit-msg
++    ```
++
++    ```bash
++    cp hooks/pre-push .git/hooks/
++    ```
++
++6. Dar permisos de ejecucion a los hooks y al script de linting
++    ```bash
++    chmod +x .git/hooks/commit-msg
++    ```
++
++    ```bash
++    chmod +x .git/hooks/pre-push
++    ```
++
++    ```bash
++    chmod +x lint_all.sh
++    ```
++
++4. **Ejecucion de `config_modifier.py`**
++      ```bash
++      python3 src/config_modifier.py
++      ```
++
++5. **Ejecucion de pruebas automatizadas**
++      ```bash
++      pytest
++      ```
++
++6. **Verificación de calidad de código**
++
++    Antes de realizar el push, puedes ejecutar manualmente el linter:
++      ```bash
++    ./scripts/lint_all.sh 
++      ```
++
++
+-- 
+2.43.0
+
+
+From ab42efa2ab76bd51edff72c2e9d03f899fb08bf1 Mon Sep 17 00:00:00 2001
+From: OliverHz28 <oliver_28z@hotmail.com>
+Date: Mon, 16 Jun 2025 10:44:06 -0500
+Subject: [PATCH 10/27] docs[#22]: README.md final con guias de uso completado
+
+---
+ README.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index 465af9b..2e08f95 100644
+--- a/README.md
++++ b/README.md
+@@ -191,7 +191,7 @@ Para trabajar con el proyecto, realiza los pasos a continuacion.
+     ```
+ 
+     ```bash
+-    chmod +x lint_all.sh
++    chmod +x scripts/lint_all.sh 
+     ```
+ 
+ 4. **Ejecucion de `config_modifier.py`**
+-- 
+2.43.0
+
+
+From 8a73ee5fa0e39d56e27ec877c9f72b80fc984a55 Mon Sep 17 00:00:00 2001
+From: GermainAN <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 11:16:55 -0500
+Subject: [PATCH 11/27] feat[#24]: Automatizar validacion de PRs con
+ check_pr.py (#25)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+* feat[#15]: validar el titulo de la PR
+
+* feat[#16]: verificar que CHANGELOG contenga seccion ## PR id
+
+* feat[#17]: validar formato de commits en archivo commits.txt
+
+* feat[#18]: Añadir funcion que ejecuta linters
+
+* test[#18]: añadir funcion para ejecutar pruebas con pytest
+
+* feat[#18]: generar reporte de validacion en pr_simulation/<id>/pr_report.md
+
+* feat[#18]: generar reportes de validacion en pr_report.md y se documento las funciones
+
+* refactor[#18]: mejorar pr_report.md y corregir nombre de la funcion changelog
+---
+ scripts/check_pr.py | 153 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 153 insertions(+)
+ create mode 100644 scripts/check_pr.py
+
+diff --git a/scripts/check_pr.py b/scripts/check_pr.py
+new file mode 100644
+index 0000000..419d777
+--- /dev/null
++++ b/scripts/check_pr.py
+@@ -0,0 +1,153 @@
++import os
++import re
++import sys
++import subprocess
++from typing import Tuple, List
++
++
++# Valida el titulo del Pull Request verificando que el archivo correspondiente exista
++# y que cumpla con el patron esperado
++def validar_titulo(carpeta_pr: str) -> Tuple[bool, str]:
++    pr_id = os.path.basename(carpeta_pr)
++    archivo_titulo = os.path.join(carpeta_pr, f"pr_{pr_id}_title.txt")
++
++    if not os.path.isfile(archivo_titulo):
++        return False, f"FAIL: Falta el archivo {archivo_titulo}"
++
++    titulo = open(archivo_titulo, encoding="utf-8").read().strip()
++
++    if not titulo:
++        return False, f"FAIL: El archivo {archivo_titulo} esta vacio"
++
++    patron = re.compile(r"^[A-Z]{2,5}-\d+: .+")
++    if patron.match(titulo):
++        return True, "OK"
++
++    return False, f"FAIL: '{titulo}' no cumple con el formato requerido"
++
++
++# Verifica que el archivo CHANGELOG.md contenga una seccion para el PR actual
++def verificar_changelog(carpeta_pr: str) -> Tuple[bool, str]:
++
++    archivo_changelog = "../CHANGELOG.md"
++
++    if not os.path.isfile(archivo_changelog):
++        return False, "FAIL: no existe CHANGELOG.md"
++
++    contenido = open(archivo_changelog, encoding="utf-8").read()
++    seccion_pr = f"## PR {os.path.basename(carpeta_pr)}"
++
++    if seccion_pr in contenido:
++        return True, "OK"
++
++    return False, f"FAIL: No se encontro la seccion '{seccion_pr}'"
++
++
++# Verifica que todos los commits en commits.txt sigan un patron
++def validar_commits(carpeta_pr: str) -> Tuple[bool, List[str]]:
++    archivo_commits = os.path.join(carpeta_pr, "commits.txt")
++    if not os.path.isfile(archivo_commits):
++        return False, ["no existe el archivo commits.txt"]
++
++    incorrectos: List[str] = []
++    patron = re.compile(r"^(feat|fix|docs|style|refactor|perf|test|chore)\[#\d+\]: .+")
++
++    for fila, commit in enumerate(open(archivo_commits, encoding="utf-8"), 1):
++        if not patron.match(commit.strip()):
++            incorrectos.append(f"fila {fila}: '{commit.strip()}'")
++
++    return (len(incorrectos) == 0, incorrectos)
++
++
++# Ejecuta el script lint_all.sh para validar la calidad del codigo
++def ejecutar_lint() -> Tuple[bool, str]:
++    try:
++        resultado = subprocess.run(
++            ["bash", "lint_all.sh"],
++            capture_output=True,
++            text=True)
++        if resultado.returncode == 0:
++            return True, resultado.stdout.strip()
++        else:
++            return False, resultado.stderr.strip() or resultado.stdout.strip()
++    except FileNotFoundError:
++        return False, "no existe el script lint_all.sh"
++
++
++# ejecuta los tests usando pytest y devuelve el resultado
++def ejecutar_tests() -> Tuple[bool, str]:
++    try:
++        resultado = subprocess.run(
++            ["pytest", "--maxfail=1", "--disable-warnings", "-q"],
++            capture_output=True,
++            text=True
++        )
++        if resultado.returncode == 0:
++            return True, resultado.stdout.strip()
++        else:
++            return False, resultado.stdout.strip() + "\n" + resultado.stderr.strip()
++    except FileNotFoundError:
++        return False, "No se encontro pytest"
++
++
++# Genera el reporte de validacion del PR en formato Markdown
++def generar_pr_repor(ruta_report: str, titulo, changelog, commits, lint, tests):
++    with open(ruta_report, "w", encoding="utf-8") as f:
++        f.write("# Informe de Validacion\n\n")
++        f.write("## Titulo\n")
++        f.write(f"{titulo[1]}\n\n")
++
++        f.write("## Changelog\n")
++        f.write(f"{changelog[1]}\n\n")
++
++        f.write("## Commits\n")
++        if commits[0]:
++            f.write("OK: Todos los commits son validos\n\n")
++        else:
++            f.write("FAIL: Commits con errores de formato:\n")
++            for error in commits[1]:
++                f.write(f"- {error}\n")
++            f.write("\n")
++
++        f.write("## Lint\n")
++        f.write(f"{'OK' if lint[0] else 'FAIL'}\n")
++        f.write(f"```\n{lint[1]}\n```\n\n")
++
++        f.write("## Tests\n")
++        f.write(f"{'OK' if tests[0] else 'FAIL'}\n")
++        f.write(f"```\n{tests[1]}\n```\n")
++
++
++def main():
++    ruta_base = "../pr_simulation"
++    if not os.path.isdir(ruta_base):
++        print("No existe la carpeta pr_simulation")
++        sys.exit(1)
++    # iteramos sobre cada carpeta de PR y lo valida
++    for nombre_carpeta in sorted(os.listdir(ruta_base)):
++        ruta_pr = os.path.join(ruta_base, nombre_carpeta)
++        if not os.path.isdir(ruta_pr):
++            continue
++
++        print(f"\nValidando PR {nombre_carpeta}")
++
++        titulo = validar_titulo(ruta_pr)
++        changelog = verificar_changelog(ruta_pr)
++        commits = validar_commits(ruta_pr)
++        lint = ejecutar_lint()
++        tests = ejecutar_tests()
++
++        generar_pr_repor(
++            os.path.join(ruta_pr, "pr_report.md"),
++            titulo,
++            changelog,
++            commits,
++            lint,
++            tests
++        )
++    # indica donde se guardo el pr_report.md
++        print("pr_report.md generado en:", os.path.join(ruta_pr, "pr_report.md"))
++
++
++if __name__ == "__main__":
++    main()
+-- 
+2.43.0
+
+
+From 79dbd58398efc823b3b7641067fefe49815d4e0e Mon Sep 17 00:00:00 2001
+From: Frank Hinojosa <124078849+OliverHz28@users.noreply.github.com>
+Date: Tue, 17 Jun 2025 13:32:24 -0500
+Subject: [PATCH 12/27] feat[#13]: merge feature/AUTO_INCR_VERSION a develop
+ (#28)
+
+* feat[#13]: agregar incrementar_build_numer en config_modifier.py
+
+* feat[#13]: agregar test basico en tests/test_config_modifier.py
+
+* feat[#13]: agregar tests basicos en tests/test_config_modifier.py
+---
+ src/config_modifier.py        | 25 ++++++++++++++++--
+ tests/test_config_modifier.py | 50 ++++++++++++++++++++++++++++++++++-
+ 2 files changed, 72 insertions(+), 3 deletions(-)
+
+diff --git a/src/config_modifier.py b/src/config_modifier.py
+index 0d7dbf0..0021f28 100644
+--- a/src/config_modifier.py
++++ b/src/config_modifier.py
+@@ -37,13 +37,34 @@ def incrementar_version(file_path):
+     return config["version"]
+ 
+ 
++def incrementar_build_number(file_path):
++    """
++    Incrementa el campo "build_number" del archivo JSON.
++    Si el campo no existe, lo crea con valor inicial 1.
++    """
++    config = leer_json(file_path)
++
++    if "build_number" not in config:
++        config["build_number"] = 0
++
++    if not isinstance(config['build_number'], (int, float)):
++        raise TypeError("El campo 'build_number' no es un número")
++
++    config["build_number"] += 1
++    with open(file_path, 'w', encoding='utf-8') as f:
++        json.dump(config, f, indent=4)
++    return config["build_number"]
++
++
+ if __name__ == "__main__":
+ 
+     file_path = "config.json"
+     try:
+         data = leer_json(file_path)
++        version = incrementar_version(file_path)
++        build = incrementar_build_number(file_path)
+         print(f"Contenido del archivo '{file_path}': {data}")
+-        nueva_version = incrementar_version(file_path)
+-        print(f"Versión actualizada correctamente a: {nueva_version}")
++        print(f"Versión actualizada correctamente a: {version}")
++        print(f"Build number actualizado correctamente a: {build}")
+     except Exception as e:
+         print(f"Error: {e}")
+diff --git a/tests/test_config_modifier.py b/tests/test_config_modifier.py
+index c20fafb..9c905c7 100644
+--- a/tests/test_config_modifier.py
++++ b/tests/test_config_modifier.py
+@@ -2,7 +2,7 @@
+ 
+ import pytest
+ import json
+-from src.config_modifier import leer_json, incrementar_version
++from src.config_modifier import leer_json, incrementar_version, incrementar_build_number
+ 
+ 
+ @pytest.fixture
+@@ -48,3 +48,51 @@ def test_incrementar_version_tipo_incorrecto(tmp_path):
+         json.dump({"version": "uno"}, f)
+     with pytest.raises(TypeError):
+         incrementar_version(file_path)
++
++
++@pytest.fixture
++def json_con_build_number(tmp_path):
++    """Fixture para pruebas con build_number"""
++    file_path = tmp_path / "config_build.json"
++    data = {"version": 1.0, "build_number": 5, "name": "Proyecto 10"}
++    with open(file_path, 'w') as f:
++        json.dump(data, f)
++    return file_path
++
++
++def test_incrementar_build_number_existente(json_con_build_number):
++    """Prueba para incrementar build_number cuando ya existe"""
++    nuevo_build = incrementar_build_number(json_con_build_number)
++    assert nuevo_build == 6
++    with open(json_con_build_number) as f:
++        datos = json.load(f)
++    assert datos["build_number"] == 6
++    assert datos["version"] == 1.0
++
++
++@pytest.fixture
++def json_sin_build_number(tmp_path):
++    """Fixture para pruebas sin build_number"""
++    file_path = tmp_path / "config_sin_build.json"
++    data = {"version": 1.0, "name": "Test App"}
++    with open(file_path, 'w') as f:
++        json.dump(data, f)
++    return file_path
++
++
++def test_incrementar_build_number_nuevo(json_sin_build_number):
++    """Prueba incrementar build_number cuando no existe"""
++    nuevo_build = incrementar_build_number(json_sin_build_number)
++    assert nuevo_build == 1
++    with open(json_sin_build_number) as f:
++        datos = json.load(f)
++    assert datos["build_number"] == 1
++
++
++def test_incrementar_build_number_tipo_incorrecto(tmp_path):
++    """Prueba error cuando build_number no es un número"""
++    file_path = tmp_path / "build_invalido.json"
++    with open(file_path, 'w') as f:
++        json.dump({"build_number": "cinco"}, f)
++    with pytest.raises(TypeError):
++        incrementar_build_number(file_path)
+-- 
+2.43.0
+
+
+From 2ac2af07c8c3af94675d81bd96605f03b5defb0d Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 13:40:15 -0500
+Subject: [PATCH 13/27] test[#29]: crear test_check_pr.py y agregar test para
+ titulo de PR con formato correcto
+
+---
+ tests/test_check_pr.py | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+ create mode 100644 tests/test_check_pr.py
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+new file mode 100644
+index 0000000..0575167
+--- /dev/null
++++ b/tests/test_check_pr.py
+@@ -0,0 +1,18 @@
++import os
++import tempfile
++from scripts.check_pr import validar_titulo
++
++# Verifica que el titulo de PR tiene el formato correcto
++def test_titulo_valido():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "123"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++        archivo = os.path.join(carpeta_pr, f"pr_{pr_id}_title.txt")
++
++        with open(archivo, "w", encoding="utf-8") as f:
++            f.write("PROY-123: primer pull request")
++
++        ok, msg = validar_titulo(carpeta_pr)
++        assert ok is True
++        assert msg == "OK"
+-- 
+2.43.0
+
+
+From fee12c6b36b9d5637b34f88beecbf713ce90f27f Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 13:46:36 -0500
+Subject: [PATCH 14/27] test[#29]: agregar test para titulo de PR con formato
+ incorrecto
+
+---
+ tests/test_check_pr.py | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 0575167..1753c09 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -2,6 +2,7 @@ import os
+ import tempfile
+ from scripts.check_pr import validar_titulo
+ 
++
+ # Verifica que el titulo de PR tiene el formato correcto
+ def test_titulo_valido():
+     with tempfile.TemporaryDirectory() as temp_dir:
+@@ -15,4 +16,18 @@ def test_titulo_valido():
+ 
+         ok, msg = validar_titulo(carpeta_pr)
+         assert ok is True
+-        assert msg == "OK"
++
++
++# verificar que el titulo de PR no tiene el formato correcto
++def test_titulo_mal_formato():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "124"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++        archivo = os.path.join(carpeta_pr, f"pr_{pr_id}_title.txt")
++
++        with open(archivo, "w", encoding="utf-8") as f:
++            f.write("PR que no tiene el formato correcto")  # Mal formato
++
++        ok, msg = validar_titulo(carpeta_pr)
++        assert ok is False
+-- 
+2.43.0
+
+
+From 2a94d73e7957f70b9240874f59b879480db8e3c3 Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 13:58:54 -0500
+Subject: [PATCH 15/27] test[#29]: agregar test para verificar que CHANGELOG.md
+ contenga la seccion del PR
+
+---
+ tests/test_check_pr.py | 26 +++++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 1753c09..72a8f87 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -1,9 +1,9 @@
+ import os
+ import tempfile
+-from scripts.check_pr import validar_titulo
++from scripts.check_pr import validar_titulo, verificar_changelog
+ 
+ 
+-# Verifica que el titulo de PR tiene el formato correcto
++# Test para verificar que el titulo de PR tiene el formato correcto
+ def test_titulo_valido():
+     with tempfile.TemporaryDirectory() as temp_dir:
+         pr_id = "123"
+@@ -18,7 +18,7 @@ def test_titulo_valido():
+         assert ok is True
+ 
+ 
+-# verificar que el titulo de PR no tiene el formato correcto
++# Test para verificar que el titulo de PR no tiene el formato correcto
+ def test_titulo_mal_formato():
+     with tempfile.TemporaryDirectory() as temp_dir:
+         pr_id = "124"
+@@ -31,3 +31,23 @@ def test_titulo_mal_formato():
+ 
+         ok, msg = validar_titulo(carpeta_pr)
+         assert ok is False
++
++# test para verificar que el archivo CHANGELOG.md contiene la seccion del PR actual
++def test_changelog_contiene_pr():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "125"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++
++        changelog_path = os.path.join(temp_dir, "CHANGELOG.md")
++        with open(changelog_path, "w", encoding="utf-8") as f:
++            f.write(f"# Cambios\n\n## PR {pr_id}\n- test PR\n")
++
++        carpeta_actual = os.getcwd()
++        os.chdir(os.path.join(temp_dir, pr_id))
++        try:
++            ok, _ = verificar_changelog(carpeta_pr)
++        finally:
++            os.chdir(carpeta_actual)
++
++        assert ok
+-- 
+2.43.0
+
+
+From cc2a92f345840ef0979cb417680a33c4b89f426c Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 14:04:53 -0500
+Subject: [PATCH 16/27] test[#29]: agregar prueba para changelog sin seccion
+ del PR
+
+---
+ tests/test_check_pr.py | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 72a8f87..22e2ec6 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -32,6 +32,7 @@ def test_titulo_mal_formato():
+         ok, msg = validar_titulo(carpeta_pr)
+         assert ok is False
+ 
++
+ # test para verificar que el archivo CHANGELOG.md contiene la seccion del PR actual
+ def test_changelog_contiene_pr():
+     with tempfile.TemporaryDirectory() as temp_dir:
+@@ -51,3 +52,24 @@ def test_changelog_contiene_pr():
+             os.chdir(carpeta_actual)
+ 
+         assert ok
++
++
++# test para verificar que el archivo CHANGELOG.md no contiene la seccion del PR actual
++def test_changelog_sin_seccion():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "126"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++
++        changelog_path = os.path.join(temp_dir, "CHANGELOG.md")
++        with open(changelog_path, "w", encoding="utf-8") as f:
++            f.write("# Cambios\n\n## PR 999\n- test PR\n")
++
++        carpeta_actual = os.getcwd()
++        os.chdir(carpeta_pr)
++        try:
++            ok, msg = verificar_changelog(carpeta_pr)
++        finally:
++            os.chdir(carpeta_actual)
++
++        assert ok is False
+-- 
+2.43.0
+
+
+From b61dd3fd4c5fc46a903229e6495db1af6bc5ccd8 Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 14:29:30 -0500
+Subject: [PATCH 17/27] agregar test para verificar que los commits tengan el
+ formato correcto
+
+---
+ tests/test_check_pr.py | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 22e2ec6..3984313 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -1,6 +1,6 @@
+ import os
+ import tempfile
+-from scripts.check_pr import validar_titulo, verificar_changelog
++from scripts.check_pr import validar_titulo, verificar_changelog, validar_commits
+ 
+ 
+ # Test para verificar que el titulo de PR tiene el formato correcto
+@@ -73,3 +73,20 @@ def test_changelog_sin_seccion():
+             os.chdir(carpeta_actual)
+ 
+         assert ok is False
++
++
++# Test para verificar que los commits tienen el formato correcto
++def test_commits_todos_validos():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        carpeta_pr = os.path.join(temp_dir, "127")
++        os.makedirs(carpeta_pr)
++
++        commits = """feat[#123]: primer commit
++                    fix[#124]: segundo commit
++                    refactor[#125]: tercer commit"""
++        with open(os.path.join(carpeta_pr, "commits.txt"), "w", encoding="utf-8") as f:
++            f.write(commits)
++
++        ok, errores = validar_commits(carpeta_pr)
++        assert ok is True
++        assert errores == []
+-- 
+2.43.0
+
+
+From 6976d82fe99dd80d03d98f7d1685e7ec9136ecd4 Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 14:36:52 -0500
+Subject: [PATCH 18/27] test[#29]: agregar test para commits con errores de
+ formato
+
+---
+ tests/test_check_pr.py | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 3984313..878ffc9 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -90,3 +90,21 @@ def test_commits_todos_validos():
+         ok, errores = validar_commits(carpeta_pr)
+         assert ok is True
+         assert errores == []
++
++# Test para verificar que los commits tienen errores de formato
++def test_commits_con_errores():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        carpeta_pr = os.path.join(temp_dir, "128")
++        os.makedirs(carpeta_pr)
++
++        commits = """commit sin formato
++                    feat123: falta corchetes
++                    fix[#789]: commit correcto"""
++        with open(os.path.join(carpeta_pr, "commits.txt"), "w", encoding="utf-8") as f:
++            f.write(commits)
++
++        ok, errores = validar_commits(carpeta_pr)
++        assert ok is False
++        assert len(errores) == 2
++        assert "fila 1" in errores[0]
++        assert "fila 2" in errores[1]
+-- 
+2.43.0
+
+
+From 676228c17e46c49f80e6e81ae100317d167fe882 Mon Sep 17 00:00:00 2001
+From: GermainAN <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 15:04:33 -0500
+Subject: [PATCH 19/27] test[#29]: agregar pruebas unitarias para check_pr.py
+ (#30)
+
+* test[#29]: crear test_check_pr.py y agregar test para titulo de PR con formato correcto
+
+* test[#29]: agregar test para titulo de PR con formato incorrecto
+
+* test[#29]: agregar test para verificar que CHANGELOG.md contenga la seccion del PR
+
+* test[#29]: agregar prueba para changelog sin seccion del PR
+
+* agregar test para verificar que los commits tengan el formato correcto
+
+* test[#29]: agregar test para commits con errores de formato
+---
+ tests/test_check_pr.py | 110 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 110 insertions(+)
+ create mode 100644 tests/test_check_pr.py
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+new file mode 100644
+index 0000000..878ffc9
+--- /dev/null
++++ b/tests/test_check_pr.py
+@@ -0,0 +1,110 @@
++import os
++import tempfile
++from scripts.check_pr import validar_titulo, verificar_changelog, validar_commits
++
++
++# Test para verificar que el titulo de PR tiene el formato correcto
++def test_titulo_valido():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "123"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++        archivo = os.path.join(carpeta_pr, f"pr_{pr_id}_title.txt")
++
++        with open(archivo, "w", encoding="utf-8") as f:
++            f.write("PROY-123: primer pull request")
++
++        ok, msg = validar_titulo(carpeta_pr)
++        assert ok is True
++
++
++# Test para verificar que el titulo de PR no tiene el formato correcto
++def test_titulo_mal_formato():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "124"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++        archivo = os.path.join(carpeta_pr, f"pr_{pr_id}_title.txt")
++
++        with open(archivo, "w", encoding="utf-8") as f:
++            f.write("PR que no tiene el formato correcto")  # Mal formato
++
++        ok, msg = validar_titulo(carpeta_pr)
++        assert ok is False
++
++
++# test para verificar que el archivo CHANGELOG.md contiene la seccion del PR actual
++def test_changelog_contiene_pr():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "125"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++
++        changelog_path = os.path.join(temp_dir, "CHANGELOG.md")
++        with open(changelog_path, "w", encoding="utf-8") as f:
++            f.write(f"# Cambios\n\n## PR {pr_id}\n- test PR\n")
++
++        carpeta_actual = os.getcwd()
++        os.chdir(os.path.join(temp_dir, pr_id))
++        try:
++            ok, _ = verificar_changelog(carpeta_pr)
++        finally:
++            os.chdir(carpeta_actual)
++
++        assert ok
++
++
++# test para verificar que el archivo CHANGELOG.md no contiene la seccion del PR actual
++def test_changelog_sin_seccion():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "126"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++
++        changelog_path = os.path.join(temp_dir, "CHANGELOG.md")
++        with open(changelog_path, "w", encoding="utf-8") as f:
++            f.write("# Cambios\n\n## PR 999\n- test PR\n")
++
++        carpeta_actual = os.getcwd()
++        os.chdir(carpeta_pr)
++        try:
++            ok, msg = verificar_changelog(carpeta_pr)
++        finally:
++            os.chdir(carpeta_actual)
++
++        assert ok is False
++
++
++# Test para verificar que los commits tienen el formato correcto
++def test_commits_todos_validos():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        carpeta_pr = os.path.join(temp_dir, "127")
++        os.makedirs(carpeta_pr)
++
++        commits = """feat[#123]: primer commit
++                    fix[#124]: segundo commit
++                    refactor[#125]: tercer commit"""
++        with open(os.path.join(carpeta_pr, "commits.txt"), "w", encoding="utf-8") as f:
++            f.write(commits)
++
++        ok, errores = validar_commits(carpeta_pr)
++        assert ok is True
++        assert errores == []
++
++# Test para verificar que los commits tienen errores de formato
++def test_commits_con_errores():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        carpeta_pr = os.path.join(temp_dir, "128")
++        os.makedirs(carpeta_pr)
++
++        commits = """commit sin formato
++                    feat123: falta corchetes
++                    fix[#789]: commit correcto"""
++        with open(os.path.join(carpeta_pr, "commits.txt"), "w", encoding="utf-8") as f:
++            f.write(commits)
++
++        ok, errores = validar_commits(carpeta_pr)
++        assert ok is False
++        assert len(errores) == 2
++        assert "fila 1" in errores[0]
++        assert "fila 2" in errores[1]
+-- 
+2.43.0
+
+
+From f3c64bec6a2f34f70730eafc1dfe932335ad05c7 Mon Sep 17 00:00:00 2001
+From: Edy <166039525+EdySerrano@users.noreply.github.com>
+Date: Tue, 17 Jun 2025 15:44:32 -0500
+Subject: [PATCH 20/27] Feature/workflow pull request (#31)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+* feat[#21]: añadir lint_all.sh y los test al workflow
+
+* Aniadir bandit a requirements.txt
+
+* Ajuste del lint_all.sh para leer *.sh
+
+* Ajuste en linea 94 de test_check_pr.py
+
+---------
+
+Co-authored-by: Edy Serrano <edy.serran.a@uni.pe>
+---
+ .github/workflows/pr_validation.yaml | 38 ++++++++++++++++++----------
+ requirements.txt                     |  3 ++-
+ scripts/lint_all.sh                  |  4 +--
+ tests/test_check_pr.py               |  1 +
+ 4 files changed, 30 insertions(+), 16 deletions(-)
+
+diff --git a/.github/workflows/pr_validation.yaml b/.github/workflows/pr_validation.yaml
+index 68f6206..5a2acd5 100644
+--- a/.github/workflows/pr_validation.yaml
++++ b/.github/workflows/pr_validation.yaml
+@@ -1,19 +1,31 @@
+-name: PR Validation  
++name: PR Validation Pipeline
+ 
+ on:
+-  push:              
+-  pull_request:     
++  pull_request:
++    branches: [ main, develop ]
+ 
+ jobs:
+-  placeholder:
+-    runs-on: ubuntu-latest   
+-
++  validate-pr:
++    runs-on: ubuntu-latest
+     steps:
+-      - name: Paso de ejemplo (Placeholder)  # el job placeholder es uno vacio
+-        run: echo "Workflow placeholder"
++      - name: Checkout código
++        uses: actions/checkout@v3
++
++      - name: Configurar Python
++        uses: actions/setup-python@v4
++        with:
++          python-version: '3.9'
++
++      - name: Instalar dependencias
++        run: |
++          pip install pytest pytest-cov flake8 bandit
++          sudo apt-get update && sudo apt-get install -y shellcheck
++
++      - name: Ejecutar linting
++        run: |
++          chmod +x ./scripts/lint_all.sh
++          ./scripts/lint_all.sh
++
+ 
+-      # Aqui se pueden agregar pasos siguientes, como:
+-      # - Validacion de formato de codigo (linter)
+-      # - Ejecucion de pruebas unitarias
+-      # - Validacion de la construccion del proyecto (build)
+-  
++      - name: Ejecutar pruebas
++        run: pytest --cov=src --cov=scripts --cov-fail-under=80
+diff --git a/requirements.txt b/requirements.txt
+index 036d8c5..811137a 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,2 +1,3 @@
+ pytest
+-flake8
+\ No newline at end of file
++flake8
++bandit
+\ No newline at end of file
+diff --git a/scripts/lint_all.sh b/scripts/lint_all.sh
+index 845f6ee..c97aaf9 100755
+--- a/scripts/lint_all.sh
++++ b/scripts/lint_all.sh
+@@ -14,7 +14,7 @@ fi
+ 
+ echo "*********************"
+ echo "Ejecutando shellcheck"
+-if shellcheck scripts/* hooks/*; then 
++if shellcheck scripts/*.sh hooks/*; then 
+   echo "No se encontraron errores con shellcheck"
+ else
+   echo "shellcheck encontro errores"
+@@ -42,4 +42,4 @@ if [ $errores -eq 1 ]; then
+ else
+   echo "Todos los lint pasaron correctamente"
+   exit 0
+-fi
+\ No newline at end of file
++fi
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 878ffc9..815af12 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -91,6 +91,7 @@ def test_commits_todos_validos():
+         assert ok is True
+         assert errores == []
+ 
++
+ # Test para verificar que los commits tienen errores de formato
+ def test_commits_con_errores():
+     with tempfile.TemporaryDirectory() as temp_dir:
+-- 
+2.43.0
+
+
+From 1542abe840cbcd8bd026b640c4ca08154e04a0d3 Mon Sep 17 00:00:00 2001
+From: Edy <166039525+EdySerrano@users.noreply.github.com>
+Date: Tue, 17 Jun 2025 17:39:54 -0500
+Subject: [PATCH 21/27] feat[#20]: merge Feature/mejora-lint branch a develop
+ (#32)
+
+* feat[#20]: implementar check_tool en lint_all.sh para verificar disponibilidad de  herramientas
+
+* feat[#20]: implementar check_tool en flake8
+
+* feat[#20]: implementar check_tool en shellcheck
+
+* feat[#20]: implementar check_tool en bandit
+
+* feat[#20]: implementar check_tool el resultado final
+
+---------
+
+Co-authored-by: Edy Serrano <edy.serran.a@uni.pe>
+---
+ scripts/lint_all.sh | 81 ++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 61 insertions(+), 20 deletions(-)
+
+diff --git a/scripts/lint_all.sh b/scripts/lint_all.sh
+index c97aaf9..e63fb41 100755
+--- a/scripts/lint_all.sh
++++ b/scripts/lint_all.sh
+@@ -2,23 +2,47 @@
+ 
+ cd "$(dirname "$0")/.." || exit
+ 
+-errores=0 
++# Colores
++GREEN="\033[1;32m"
++RED="\033[1;31m"
++YELLOW="\033[1;33m"
++NC="\033[0m" #No Color
+ 
+-echo "Ejecutando flake8"
+-if flake8 src/ tests/ --max-line-length=88 --select=E,W,F; then
+-  echo "No se encontraron errores con flake8"
+-else
+-  echo "flake8 encontro errores"
+-  errores=1
++errores=0
++start_time=$(date +%s)
++
++check_tool() {
++	if ! command -v "$1" &>/dev/null; then
++		echo -e "${YELLOW} Herramienta $1 no esta instalada. Se omitira.${NC}"
++		return 1
++	fi
++	return 0
++}
++
++echo "Iniciando verificacion de código con linters..."
++echo "==============================================="
++
++
++if check_tool flake8; then
++	echo "*********************"
++	echo "Ejecutando flake8"
++	if flake8 src/ tests/ --max-line-length=88 --select=E,W,F; then
++		echo -e "${GREEN} No se encontraron errores con flake8${NC}"
++	else
++		echo -e "${RED} flake8 encontró errores${NC}"
++		errores=1
++ 	fi
+ fi
+ 
+-echo "*********************"
+-echo "Ejecutando shellcheck"
+-if shellcheck scripts/*.sh hooks/*; then 
+-  echo "No se encontraron errores con shellcheck"
+-else
+-  echo "shellcheck encontro errores"
+-  errores=1
++if check_tool shellcheck; then
++	echo "*********************"
++	echo "Ejecutando shellcheck"
++	if shellcheck scripts/*.sh hooks/*; then 
++		echo -e "${GREEN} No se encontraron errores con shellcheck${NC}"
++	else
++		echo -e "${RED} shellcheck encontró errores${NC}"
++	errores=1
++	fi
+ fi
+ 
+ echo "*********************"
+@@ -34,12 +58,29 @@ else
+   echo "No se encontro el directorio de IaC"
+ fi
+ 
+-echo "*********************"
+-echo "Resultado Final:"
++if check_tool bandit; then
++	echo "*********************"
++	echo "Ejecutando bandit"
++	if bandit -r src/ > bandit_report.txt; then
++		echo -e "${GREEN} No se encontraron errores con bandit${NC}"
++	else
++		echo -e "${RED} bandit encontró vulnerabilidades${NC}"
++		errores=1
++		cat bandit_report.txt
++	fi
++fi
++
++echo "==============================================="
++end_time=$(date +%s)
++duration=$((end_time - start_time))
++
++echo -e "${YELLOW} Resumen de linting:${NC}"
++echo " Tiempo de ejecución: ${duration}s"
++
+ if [ $errores -eq 1 ]; then
+-  echo "Se encontraron errores"
+-  exit 1
++	echo -e "${RED} Se encontraron errores de linting. Revisa los mensajes anteriores.${NC}"
++	exit 1
+ else
+-  echo "Todos los lint pasaron correctamente"
+-  exit 0
++	echo -e "${GREEN} Todos los linters pasaron correctamente. ¡Buen trabajo!${NC}"
++	exit 0
+ fi
+-- 
+2.43.0
+
+
+From ee2a8794a6a793567187b99fb71a36326d2c0772 Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 19:27:47 -0500
+Subject: [PATCH 22/27] test[#29]: agregar pruebas para validar ausencia y
+ vacio del titulo
+
+---
+ tests/test_check_pr.py | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 878ffc9..167b61e 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -18,6 +18,32 @@ def test_titulo_valido():
+         assert ok is True
+ 
+ 
++# No existe el archivo PR ID
++def test_archivo_inexistente():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "124"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++
++        ok, msg = validar_titulo(carpeta_pr)
++        assert ok is False
++
++
++# El archivo existe pero esta vacío
++def test_titulo_vacio():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "125"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++        archivo = os.path.join(carpeta_pr, f"pr_{pr_id}_title.txt")
++
++        with open(archivo, "w", encoding="utf-8") as f:
++            f.write("   \n")
++
++        ok, msg = validar_titulo(carpeta_pr)
++        assert ok is False
++
++
+ # Test para verificar que el titulo de PR no tiene el formato correcto
+ def test_titulo_mal_formato():
+     with tempfile.TemporaryDirectory() as temp_dir:
+@@ -91,6 +117,7 @@ def test_commits_todos_validos():
+         assert ok is True
+         assert errores == []
+ 
++
+ # Test para verificar que los commits tienen errores de formato
+ def test_commits_con_errores():
+     with tempfile.TemporaryDirectory() as temp_dir:
+-- 
+2.43.0
+
+
+From 6703d7434fa57abfd030f141894b3f52e82e00d2 Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 19:30:16 -0500
+Subject: [PATCH 23/27] test[#29]: agregar test para ausencia del archivo
+ CHANGELOG.md
+
+---
+ tests/test_check_pr.py | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 167b61e..7897b7d 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -80,6 +80,25 @@ def test_changelog_contiene_pr():
+         assert ok
+ 
+ 
++# No existe el archivo CHANGELOG.md
++def test_changelog_no_existe():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        pr_id = "201"
++        carpeta_pr = os.path.join(temp_dir, pr_id)
++        os.makedirs(carpeta_pr)
++
++        # No se crea CHANGELOG.md
++
++        cwd_original = os.getcwd()
++        os.chdir(carpeta_pr)
++        try:
++            ok, msg = verificar_changelog(carpeta_pr)
++        finally:
++            os.chdir(cwd_original)
++
++        assert ok is False
++
++
+ # test para verificar que el archivo CHANGELOG.md no contiene la seccion del PR actual
+ def test_changelog_sin_seccion():
+     with tempfile.TemporaryDirectory() as temp_dir:
+-- 
+2.43.0
+
+
+From b8ee606adb3d1381cd00e2238fae8b39a2c255cc Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 19:32:48 -0500
+Subject: [PATCH 24/27] test[#29]: agregar test para archivo de commits
+ inexistente
+
+---
+ tests/test_check_pr.py | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 7897b7d..c91db0a 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -154,3 +154,13 @@ def test_commits_con_errores():
+         assert len(errores) == 2
+         assert "fila 1" in errores[0]
+         assert "fila 2" in errores[1]
++
++
++# Archivo de commits no existe
++def test_validar_commits_archivo_inexistente():
++    with tempfile.TemporaryDirectory() as temp_dir:
++        carpeta_pr = os.path.join(temp_dir, "303")
++        os.makedirs(carpeta_pr)
++
++        ok, errores = validar_commits(carpeta_pr)
++        assert ok is False
+-- 
+2.43.0
+
+
+From dc1e246de2816501a795a28fc3fb20761057c728 Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 19:36:35 -0500
+Subject: [PATCH 25/27] test[#29]: se agrego test para verificar ejecucion
+ exitosa del linter
+
+---
+ tests/test_check_pr.py | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index c91db0a..8fd1940 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -1,6 +1,8 @@
+ import os
+ import tempfile
+-from scripts.check_pr import validar_titulo, verificar_changelog, validar_commits
++from scripts.check_pr import (validar_titulo, verificar_changelog,
++                              validar_commits, ejecutar_lint)
++from unittest.mock import patch, MagicMock
+ 
+ 
+ # Test para verificar que el titulo de PR tiene el formato correcto
+@@ -164,3 +166,15 @@ def test_validar_commits_archivo_inexistente():
+ 
+         ok, errores = validar_commits(carpeta_pr)
+         assert ok is False
++
++
++# test para ejecutar el linter y verificar que se ejecuta correctamente
++def test_ejecutar_lint_exito():
++    with patch("subprocess.run") as mock_run:
++        mock_result = MagicMock()
++        mock_result.returncode = 0
++        mock_result.stdout = "Lint exitoso"
++        mock_run.return_value = mock_result
++
++        ok, salida = ejecutar_lint()
++        assert ok is True
+-- 
+2.43.0
+
+
+From 5d5922528f9e75eaa69e08c4e8fc51cfcdb2ca7c Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 19:40:52 -0500
+Subject: [PATCH 26/27] test[#29]: se agrego un test para verificar fallo en
+ ejecucion del linter
+
+---
+ tests/test_check_pr.py | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index 8fd1940..a97a767 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -178,3 +178,16 @@ def test_ejecutar_lint_exito():
+ 
+         ok, salida = ejecutar_lint()
+         assert ok is True
++
++
++# test para verificar que el linter falla
++def test_ejecutar_lint_error():
++    with patch("subprocess.run") as mock_run:
++        mock_result = MagicMock()
++        mock_result.returncode = 1
++        mock_result.stdout = ""
++        mock_result.stderr = "Error de linting"
++        mock_run.return_value = mock_result
++
++        ok, salida = ejecutar_lint()
++        assert ok is False
+-- 
+2.43.0
+
+
+From b9c16f5fc444907fdb3e32be06909a307e5429e8 Mon Sep 17 00:00:00 2001
+From: Germain <germainchoquechambi5@gmail.com>
+Date: Tue, 17 Jun 2025 19:42:59 -0500
+Subject: [PATCH 27/27] test[#29]: se corrigio titulo del test para cumplir con
+ formato validado
+
+---
+ tests/test_check_pr.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/test_check_pr.py b/tests/test_check_pr.py
+index a97a767..10ab708 100644
+--- a/tests/test_check_pr.py
++++ b/tests/test_check_pr.py
+@@ -14,7 +14,7 @@ def test_titulo_valido():
+         archivo = os.path.join(carpeta_pr, f"pr_{pr_id}_title.txt")
+ 
+         with open(archivo, "w", encoding="utf-8") as f:
+-            f.write("PROY-123: primer pull request")
++            f.write("feat[#123]: primer pull request")
+ 
+         ok, msg = validar_titulo(carpeta_pr)
+         assert ok is True
+-- 
+2.43.0
+
