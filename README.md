@@ -8,10 +8,15 @@
 
 **Titulo del proyecto:** Proyecto 10: "Pull requests y revisión de código Automatizada con Hooks y Linters"
 
-**Grupo:** 6
+**Grupo:** 6f
 
 **URL del repositorio grupa:** [PC3Proyecto10](https://github.com/OliverHz28/PC3Proyecto10.git)
-
+---
+## videos
+- [Video Sprint 1](https://www.youtube.com/watch?v=ZwcuikAZ56w)
+- [Video Sprint 2](https://www.youtube.com/watch?v=CXj9d7sZ-J0)
+- [Video Sprint 3](https://www.youtube.com/watch?v=nRNpyQhkx0E)
+---
 # Sprint 1
 ## Mi rol
 - Me encargue de implementar un sistema de validacion automatica para asegurar la calidad del codigo antes de realizar un commits o pushear. 
